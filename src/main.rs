@@ -1,49 +1,32 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use serde::{Deserialize, Serialize};
+use actix_web::{middleware, web, App, HttpServer};
 
-static NACOS_SERVER: &str = "/nacos";
-static PROVIDER_NAME: &str = "rust-microservice";
-static PROVIDER_HOST: &str = "10.100.1.26";
-static PROVIDER_PORT: i32 = 8080;
+mod controller;
 
-mod nacos;
+use controller::test_json;
+use controller::topic;
 
-#[derive(Serialize, Deserialize)]
-struct Message {
-  msg: String,
-  code: i32,
-}
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+  std::env::set_var("RUST_LOG", "actix_web=info");
+  env_logger::init();
 
-async fn index() -> impl Responder {
-  HttpResponse::Ok().body("this is a rust microservice demo")
-}
-
-async fn plain_text_resp() -> impl Responder {
-  HttpResponse::Ok().body("from /foo")
-}
-
-async fn json_resp() -> impl Responder {
-  let p = Message {
-    msg: "from /bar".to_string(),
-    code: 0,
-  };
-
-  HttpResponse::Ok().json(p)
-}
-
-#[actix_rt::main]
-async fn main() {
-  println!("listening at http://localhost:8080");
-  nacos::register_service();
   HttpServer::new(|| {
     App::new()
-      .route("/", web::get().to(index))
-      .route("/foo", web::get().to(plain_text_resp))
-      .route("/bar", web::get().to(json_resp))
+      // enable logger
+      .wrap(middleware::Logger::default())
+      .data(web::JsonConfig::default().limit(4096)) // <- limit size of the payload (global configuration)
+      .service(web::resource("/extractor").route(web::post().to(test_json::index)))
+      .service(
+        web::resource("/extractor2")
+          .data(web::JsonConfig::default().limit(1024)) // <- limit size of the payload (resource level)
+          .route(web::post().to(test_json::extract_item)),
+      )
+      .service(web::resource("/manual").route(web::post().to(test_json::index_manual)))
+      .service(web::resource("/mjsonrust").route(web::post().to(test_json::index_mjsonrust)))
+      .service(web::resource("/").route(web::post().to(test_json::index)))
+      .service(web::resource("/topics").route(web::get().to(topic::get)))
   })
-  .bind("127.0.0.1:8080")
-  .unwrap()
-  .run();
-
-  nacos::ping_schedule();
+  .bind("127.0.0.1:8080")?
+  .run()
+  .await
 }
