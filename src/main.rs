@@ -1,53 +1,49 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde::{Deserialize, Serialize};
 
-#[macro_use]
-extern crate rocket;
-use rocket::response::content;
-use rocket_contrib::json::Json;
-use serde::Serialize;
+static NACOS_SERVER: &str = "/nacos";
+static PROVIDER_NAME: &str = "rust-microservice";
+static PROVIDER_HOST: &str = "10.100.1.26";
+static PROVIDER_PORT: i32 = 8080;
 
-mod models;
+mod nacos;
 
-#[derive(Serialize)]
-struct Task {
-    title: String,
-    active: bool,
+#[derive(Serialize, Deserialize)]
+struct Message {
+  msg: String,
+  code: i32,
 }
 
-mod other {
-    #[get("/world")]
-    pub fn world() -> &'static str {
-        "Hello, world!"
-    }
+async fn index() -> impl Responder {
+  HttpResponse::Ok().body("this is a rust microservice demo")
 }
 
-#[get("/hello")]
-pub fn hello() -> &'static str {
-    models::db::init_db().await();
-    models::db::test()
+async fn plain_text_resp() -> impl Responder {
+  HttpResponse::Ok().body("from /foo")
 }
 
-#[get("/json")]
-pub fn show_json() -> content::Json<&'static str> {
-    content::Json("{ 'hi': 'world!' }")
+async fn json_resp() -> impl Responder {
+  let p = Message {
+    msg: "from /bar".to_string(),
+    code: 0,
+  };
+
+  HttpResponse::Ok().json(p)
 }
 
-#[get("/task")]
-fn task() -> Json<Task> {
-    Json(Task {
-        title: "测试任务aaaa".to_string(),
-        active: true,
-    })
-}
+#[actix_rt::main]
+async fn main() {
+  println!("listening at http://localhost:8080");
+  nacos::register_service();
+  HttpServer::new(|| {
+    App::new()
+      .route("/", web::get().to(index))
+      .route("/foo", web::get().to(plain_text_resp))
+      .route("/bar", web::get().to(json_resp))
+  })
+  .bind("127.0.0.1:8080")
+  .unwrap()
+  .run();
 
-#[get("/config")]
-fn get_config() -> &'static str {
-    let address = "aaaa";
-    address
-}
-
-fn main() {
-    rocket::ignite()
-        .mount("/", routes![hello, other::world, show_json, task])
-        .launch();
+  nacos::ping_schedule();
 }

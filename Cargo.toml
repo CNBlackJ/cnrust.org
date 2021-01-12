@@ -7,7 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.4.6"
-serde = { version = "1.0", features = ["derive"] }
-rocket_contrib = "0.4.6"
-mongodb = "1.1.1"
+actix-web = "3"
+actix-rt = "1"
+serde = "1"
+reqwest = { version = "0.10.4" , features= ["blocking"]}
+async-std = "1.5"
+percent-encoding = "2.1.0"
