@@ -1,2 +1,1 @@
-pub mod test_json;
-pub mod topic;
+pub mod topic_controller;
