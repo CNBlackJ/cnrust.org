@@ -1,5 +1,6 @@
 use bson::doc;
 use bson::oid::ObjectId;
+use log::{debug, error, info, log_enabled, Level};
 use serde::{Deserialize, Serialize};
 
 #[path = "../util/db.rs"]
@@ -16,15 +17,15 @@ impl Topic {
   pub const TABLE_NAME: &'static str = "topic";
 }
 
-pub async fn get() -> Topic {
+pub fn get() -> String {
   let db_client = db::MONGO.database("test");
-  for coll_name in db_client.list_collection_names(None).await? {
-    println!("collection: {}", coll_name);
-  }
+  error!("----");
+  // for coll_name in db_client.list_collection_names(None) {
+  //   info!("collection: {:?}", coll_name);
+  // }
 
   // let db_client = db::MONGO.database("test");
   // let coll = db_client.collection("topic");
   // coll.find(Some(doc! {}), None);
-
-  Topic {}
+  String::from("topic")
 }

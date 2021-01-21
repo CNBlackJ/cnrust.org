@@ -1,7 +1,5 @@
-#[path = "../models/topic_model.rs"]
-mod topic_model;
+use crate::models::topic_model;
 
-pub fn get() -> topic_model::Topic {
-  let topic = topic_model::get();
-  topic
+pub fn get() -> String {
+  topic_model::get()
 }

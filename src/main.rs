@@ -6,7 +6,7 @@ use controller::topic_controller;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-  std::env::set_var("RUST_LOG", "actix_web=info");
+  std::env::set_var("RUST_LOG", "actix_web=debug");
   env_logger::init();
 
   HttpServer::new(|| {
@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
       .wrap(middleware::Logger::default())
       .service(web::resource("/topics").route(web::get().to(topic_controller::get)))
   })
-  .bind("127.0.0.1:8080")?
+  .bind("127.0.0.1:9090")?
   .run()
   .await
 }

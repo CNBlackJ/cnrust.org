@@ -556,6 +556,7 @@ dependencies = [
  "futures",
  "json",
  "lazy_static",
+ "log",
  "mongodb",
  "serde",
  "serde_json",
