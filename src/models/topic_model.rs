@@ -1,6 +1,6 @@
 use bson::doc;
 use bson::oid::ObjectId;
-use log::{debug, error, info, log_enabled, Level};
+use log::error;
 use serde::{Deserialize, Serialize};
 
 #[path = "../util/db.rs"]
@@ -19,10 +19,7 @@ impl Topic {
 
 pub fn get() -> String {
   let db_client = db::MONGO.database("test");
-  error!("----");
-  // for coll_name in db_client.list_collection_names(None) {
-  //   info!("collection: {:?}", coll_name);
-  // }
+  db_client.list_collection_names(None).unwrap();
 
   // let db_client = db::MONGO.database("test");
   // let coll = db_client.collection("topic");

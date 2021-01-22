@@ -1,8 +1,7 @@
 use actix_web::{middleware, web, App, HttpServer};
 
-mod controller;
-
-use controller::topic_controller;
+mod controllers;
+use controllers::topic_controller;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
