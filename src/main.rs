@@ -12,7 +12,14 @@ async fn main() -> std::io::Result<()> {
     App::new()
       // enable logger
       .wrap(middleware::Logger::default())
-      .service(web::resource("/topics").route(web::get().to(topic_controller::get)))
+      .service(
+        web::scope("/topics")
+        .service(topic_controller::get)
+        .service(topic_controller::list)
+        .service(topic_controller::create)
+        .service(topic_controller::update)
+        .service(topic_controller::delete)
+      )
   })
   .bind("127.0.0.1:9090")?
   .run()
